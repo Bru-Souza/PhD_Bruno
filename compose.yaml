@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  mediamtx:
+    image: bluenviron/mediamtx:latest-ffmpeg
+
+    networks:
+      - mynetwork
+    ports:
+      - 8554:8554
+
+  ffmpeg:
+    build:
+      context: .
+      dockerfile: Dockerfile.ffmpeg
+
+    depends_on:
+      - mediamtx
+    networks:
+      - mynetwork
+
+
+networks:
+  mynetwork:
+    driver: bridge
+    

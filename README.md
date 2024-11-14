@@ -1,1 +1,3 @@
-# cpps_framework
+# CPPS Framework
+
+> Repositório utilizado para o desenvolvimento do projeto de Doutorado.

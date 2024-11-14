@@ -1,0 +1,20 @@
+FROM alpine
+
+# Instala o ffmpeg
+RUN apk add --no-cache ffmpeg
+
+RUN mkdir app
+
+WORKDIR /app
+
+COPY start_ffmpeg.sh .
+
+COPY caso_de_teste_novitec_2023-10-22T09-05-01_ffmpeg.h264 .
+# Defina a variável de ambiente para o caminho do vídeo
+ENV VIDEO_PATH caso_de_teste_novitec_2023-10-22T09-05-01_ffmpeg.h264
+
+# Torne o script de inicialização executável
+RUN chmod +x start_ffmpeg.sh
+
+# Execute o script de inicialização quando o contêiner for iniciado
+CMD ["./start_ffmpeg.sh"]
