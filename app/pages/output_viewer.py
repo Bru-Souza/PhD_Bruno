@@ -33,7 +33,7 @@ def main():
 
                     elif frame is not None:
                         # Exibe o frame final no placeholder
-                        frame_placeholder.image(frame, channels="BGR", use_column_width=True)
+                        frame_placeholder.image(frame, channels="BGR", use_container_width=True)
                         break  # Evitar continuar o loop desnecessariamente após exibir o frame
 
                 if frame is None:

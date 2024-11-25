@@ -26,7 +26,7 @@ def main():
         current_frame = st.session_state['input_node'].get_frame()
         
         if current_frame is not None:
-            frame_placeholder.image(current_frame, channels="BGR", use_column_width=True)
+            frame_placeholder.image(current_frame, channels="BGR", use_container_width=True)
         else:
             st.warning("No frames available.")
             st.session_state.video_running = False  # Para o vídeo se não houver mais frames
