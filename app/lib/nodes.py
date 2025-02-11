@@ -33,6 +33,10 @@ class InputNode(Node):
     def get_frame(self):
         """Obtém o frame do vídeo atual"""
         return self.video_manager.get_frame()
+    
+    def release(self):
+        """Libera o vídeo quando não for mais necessário"""
+        return self.video_manager.release()
 
     def build_node(self):
         print("Building node with data:", self.data)

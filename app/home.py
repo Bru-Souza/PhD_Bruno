@@ -6,7 +6,7 @@ st.set_page_config(
 )
 
 
-st.write("# Welcome to ARsembly! 👋 🤖")
+st.write("# Welcome to ARsembly!")
 
 st.markdown(
     """

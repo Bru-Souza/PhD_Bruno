@@ -1,4 +1,4 @@
-name: doutorado
+name: assembly_test
 channels:
   - defaults
 dependencies:

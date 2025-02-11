@@ -5,6 +5,9 @@ def main():
     st.set_page_config(page_title="Output Viewer", page_icon="📺")
     st.title("Output Viewer")
     
+    if st.button("Stop output"):
+        st.session_state.video_running = False
+
     # Botões de controle do vídeo
     if st.button("Play Video"):
         
@@ -42,8 +45,11 @@ def main():
                     break
 
                 # Calcula o intervalo baseado na taxa de frames, ex: 30 FPS (33 ms)
-                # time.sleep(1 / 30.0)  # Ajuste para a taxa de frames desejada
-                time.sleep(0.05)
+                #time.sleep(1 / 30.0)  # Ajuste para a taxa de frames desejada
+                #time.sleep(0.05)
+            
+            node_objects[0].release()
+            #torch.cuda.empty_cache()  # Clear CUDA memory
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,8 @@
+app/yolo11n.pt filter=lfs diff=lfs merge=lfs -text
+assembly/video_gravado.avi filter=lfs diff=lfs merge=lfs -text
+videos/video_1.avi filter=lfs diff=lfs merge=lfs -text
+videos/video_2.avi filter=lfs diff=lfs merge=lfs -text
+videos/video_3.avi filter=lfs diff=lfs merge=lfs -text
+videos/video_4.avi filter=lfs diff=lfs merge=lfs -text
+videos/video_5.mp4 filter=lfs diff=lfs merge=lfs -text
+videos/video_5.avi filter=lfs diff=lfs merge=lfs -text
