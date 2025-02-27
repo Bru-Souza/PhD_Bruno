@@ -1,7 +1,9 @@
 import tempfile
+import logging
 import streamlit as st
 
 from lib.nodes import InputNode
+from lib.utils import update_project_file
 
 st.set_page_config(page_title="Set video source", page_icon="📹")
 
@@ -60,6 +62,8 @@ if videoSrc_type == "Video file":
 
 elif videoSrc_type == "Camera device":
     
+    logging.info("videoSrc_type set to Camera device.")
+    
     with st.form("camera_src"):
         # Set camera options
         cameras = ["webcam", "Intel RealSense D435i"]
@@ -72,13 +76,17 @@ elif videoSrc_type == "Camera device":
         if submit and camera_name != None:
             if camera_name == "webcam":
                 cameara_device = 0
+                logging.info("camera_name set to webcam.")
             elif camera_name == "Intel RealSense D435i":
                 cameara_device = 6
+                logging.info("camera_name set to Intel RealSense D435i.")
             
 
             # Salvar o caminho do arquivo temporário no session_state
             st.session_state.uploaded_file_path = cameara_device
-            st.success("Camera source selected.")
+            
+            # Salvar a informacao no arquivo do projeto
+            update_project_file({"videoSrc_type": videoSrc_type, "camera_device": cameara_device})
 
             # Inicializa o InputNode apenas uma vez
             if 'input_node' not in st.session_state:
@@ -100,18 +108,16 @@ elif videoSrc_type == "Camera device":
                 # Controle do vídeo
                 if 'video_running' not in st.session_state:
                     st.session_state.video_running = False
-                
-                print('[INFO] Input node was created.')
+                    
+                logging.info("Input node was created.")
 
         # create cols
         col1, col2, col3 = st.columns(3)
-        
+
         with col1:
-            if st.form_submit_button(label="Check video src"):
-                st.switch_page("pages/3_video_check.py") 
-        with col2:
             if st.form_submit_button(label="ROI setup"):
-                st.switch_page("pages/4_ROI.py")
+                st.switch_page("pages/3_ROI.py")
+
 
 elif videoSrc_type == "IP Address":
     with st.form("ip_src"):

@@ -1,55 +1,39 @@
+import os
 import time
 import streamlit as st
 
-def main():
-    st.set_page_config(page_title="Output Viewer", page_icon="📺")
-    st.title("Output Viewer")
-    
-    if st.button("Stop output"):
-        st.session_state.video_running = False
+import cv2
+# os.environ['YOLO_VERBOSE'] = 'False'
+from ultralytics import solutions
 
-    # Botões de controle do vídeo
-    if st.button("Play Video"):
-        
-        st.session_state.video_running = True
-        # Iterar sobre os ramos e obter os frames
-        for path in st.session_state['all_possible_branches']:
-            
-            # Armazene os node_objects e o frame_placeholder uma vez, fora do loop
-            node_objects = st.session_state['node_object']
-            frame_placeholder = st.empty()  # placeholder para exibir frames
+cap = cv2.VideoCapture(0)
+assert cap.isOpened(), "Error reading video file"
+w, h, fps = (int(cap.get(x)) for x in (cv2.CAP_PROP_FRAME_WIDTH, cv2.CAP_PROP_FRAME_HEIGHT, cv2.CAP_PROP_FPS))
 
-            while st.session_state.video_running:
+# Define region points
+region_points = [(150, 150), (1130, 150), (1130, 570), (150, 570)]
 
-                frame = None
-                
-                # Iterar sobre os IDs de nodes no caminho (path)
-                for node_idx, node_id in enumerate(path):
+# Video writer
+video_writer = cv2.VideoWriter("object_counting_output.avi", cv2.VideoWriter_fourcc(*"mp4v"), fps, (w, h))
 
-                    # Obter o frame inicial apenas uma vez
-                    if node_id == 'input_1':
-                        frame = node_objects[0].get_frame()  # Obter o frame inicial
+# Init TrackZone (Object Tracking in Zones, not complete frame)
+trackzone = solutions.TrackZone(
+    show=True,  # Display the output
+    region=region_points,  # Pass region points
+    model="yolo11n.pt",  # You can use any model that Ultralytics support, i.e. YOLOv9, YOLOv10
+    # line_width=2,  # Adjust the line width for bounding boxes and text display
+    # classes=[0, 2],  # If you want to count specific classes i.e. person and car with COCO pretrained model.
+)
 
-                    elif frame is not None and node_id != 'output_1':
-                        # Aplicar o processamento do frame em cada nó
-                        frame = node_objects[node_idx].process_task(frame)
+# Process video
+while cap.isOpened():
+    success, im0 = cap.read()
+    if not success:
+        print("Video frame is empty or video processing has been successfully completed.")
+        break
+    im0 = trackzone.trackzone(im0)
+    video_writer.write(im0)
 
-                    elif frame is not None:
-                        # Exibe o frame final no placeholder
-                        frame_placeholder.image(frame, channels="BGR", use_container_width=True)
-                        break  # Evitar continuar o loop desnecessariamente após exibir o frame
-
-                if frame is None:
-                    st.warning("No frames available.")
-                    st.session_state.video_running = False  # Para o vídeo se não houver mais frames
-                    break
-
-                # Calcula o intervalo baseado na taxa de frames, ex: 30 FPS (33 ms)
-                #time.sleep(1 / 30.0)  # Ajuste para a taxa de frames desejada
-                #time.sleep(0.05)
-            
-            node_objects[0].release()
-            #torch.cuda.empty_cache()  # Clear CUDA memory
-
-if __name__ == "__main__":
-    main()
+cap.release()
+video_writer.release()
+cv2.destroyAllWindows()

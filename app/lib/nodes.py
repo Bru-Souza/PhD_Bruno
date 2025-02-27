@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 
 from typing import Tuple
 from abc import ABC, abstractmethod
@@ -59,6 +60,40 @@ class ProcessingNode(Node):
         super().__init__(id, pos, 'processing', 'right', 'left', data)
 
 
+class AssemblyStepNode(Node):
+    def __init__(self, id: str, pos: Tuple[float, float], node_type: str, source_position: str, target_position: str, data):
+        self.id = id
+        self.pos = pos
+        self.node_type = node_type
+        self.source_position = source_position
+        self.target_position = target_position
+        self.data = data
+        self.node = self.build_node()
+
+        self.match: bool = False
+        self.recognized: bool = False
+        self.template_img_path = None
+        self.template_img = None
+        self.obj_cls = None
+        self.obj_idx = None
+        
+
+    def build_node(self):
+        print("Building node with data:", self.data)
+        node = StreamlitFlowNode(
+            id=self.id,
+            pos=self.pos,
+            node_type=self.node_type,
+            source_position=self.source_position,
+            target_position=self.target_position,
+            data=self.data,
+            connectable=True,
+            deletable=True,
+            draggable=True,
+        )
+        return node
+
+
 class TaskNode(Node, ABC):
     def __init__(self, id, pos, data):
         super().__init__(id, pos, 'default', 'right', 'left', data)
@@ -94,6 +129,7 @@ class CircleTaskNode(TaskNode):
         thickness = 2
         frame_with_circle = cv2.circle(frame, center, radius, color, thickness)
         return frame_with_circle
+
 
 class SquareTaskNode(TaskNode):
     

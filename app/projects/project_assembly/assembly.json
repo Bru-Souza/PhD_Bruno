@@ -1,0 +1,74 @@
+{
+    "project_name": "assembly",
+    "videoSrc_type": "Camera device",
+    "camera_device": 0,
+    "canvas_result": {
+        "version": "4.4.0",
+        "objects": [
+            {
+                "type": "rect",
+                "version": "4.4.0",
+                "originX": "left",
+                "originY": "top",
+                "left": 12,
+                "top": 18,
+                "width": 602,
+                "height": 320,
+                "fill": "rgba(77, 145, 207, 0.3)",
+                "stroke": "000000",
+                "strokeWidth": 3,
+                "strokeDashArray": null,
+                "strokeLineCap": "butt",
+                "strokeDashOffset": 0,
+                "strokeLineJoin": "miter",
+                "strokeUniform": true,
+                "strokeMiterLimit": 4,
+                "scaleX": 1,
+                "scaleY": 1,
+                "angle": 0,
+                "flipX": false,
+                "flipY": false,
+                "opacity": 1,
+                "shadow": null,
+                "visible": true,
+                "backgroundColor": "",
+                "fillRule": "nonzero",
+                "paintFirst": "fill",
+                "globalCompositeOperation": "source-over",
+                "skewX": 0,
+                "skewY": 0,
+                "rx": 0,
+                "ry": 0
+            }
+        ]
+    },
+    "model": {
+        "selected_model": "yolo11n",
+        "iou": 0.6,
+        "conf": 0.6,
+        "selected_ind": [
+            0,
+            1,
+            2
+        ],
+        "selected_classes": [
+            "person",
+            "bus",
+            "car"
+        ]
+    },
+    "step_1": {
+        "id": "step_1",
+        "uploaded_file": "template_01.png",
+        "obj_cls": "person",
+        "obj_idx": 0,
+        "content": "01"
+    },
+    "step_2": {
+        "id": "step_2",
+        "uploaded_file": "template_02.png",
+        "obj_cls": "bus",
+        "obj_idx": 1,
+        "content": "02"
+    }
+}

@@ -1,4 +1,3 @@
-import random
 import streamlit as st
 
 from lib.nodes import *
@@ -36,7 +35,6 @@ st.session_state.flow_state = streamlit_flow('flow',
 
 # Botão para salvar o novo flow de tasks
 if st.button("Define flow", type="primary"):
-    
     # Verificar conexões
     edges = st.session_state.flow_state.edges
     
@@ -61,6 +59,8 @@ if st.button("Define flow", type="primary"):
 
     print(f'[INFO] Possible flow branches: {all_possible_branches}')
 
-    st.success("The new task flow was defined.")
     # Set env variable
     st.session_state['all_possible_branches'] = all_possible_branches
+
+    st.success("The new task flow was defined.")
+    logging.info("The new task flow was defined.")
