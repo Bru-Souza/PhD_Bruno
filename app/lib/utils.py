@@ -190,7 +190,9 @@ def get_project_data(project_data):
             )
             assembly_step.obj_cls = value.get("obj_cls", "")
             assembly_step.obj_idx = value.get("obj_idx", "")
-            assembly_step.template_img_path =  value.get("uploaded_file", "")
+            assembly_step.template_img_path =  value.get("template_file", "")
+            assembly_step.instruction_img_path = value.get("instruction_file", "")
+            assembly_step.instruction_text = value.get("instruction_text", "")
 
             st.session_state['nodes'].append(assembly_step.node)
             st.session_state['node_object'].append(assembly_step)
@@ -201,3 +203,27 @@ def print_session_state():
     for key, value in st.session_state.items():
         print(f"{key}: {value}")
 
+
+def get_next_experiment_filename(base_folder, extension):
+    os.makedirs(base_folder, exist_ok=True)
+    exp_num = 1
+    while os.path.exists(os.path.join(base_folder, f"exp_{exp_num:02d}.{extension}")):
+        exp_num += 1
+    return os.path.join(base_folder, f"exp_{exp_num:02d}.{extension}")
+
+def append_to_json(json_path, new_data):
+    if os.path.exists(json_path):
+        with open(json_path, "r") as json_file:
+            try:
+                data = json.load(json_file)
+            except json.JSONDecodeError:
+                data = {}
+    else:
+        data = {}
+
+    # Atualiza os dados
+    data.update(new_data)
+
+    # Reescreve o JSON com os dados atualizados
+    with open(json_path, "w") as json_file:
+        json.dump(data, json_file, indent=4)

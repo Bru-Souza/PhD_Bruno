@@ -81,14 +81,14 @@ model_name = st.text_input("Model name", placeholder="Insert model name")
 if model_type == "Object detection":
 
     # Add dropdown menu for model selection
-    available_models = ["lego_v1", "yolo11n"]
+    available_models = ["lego_v1", "lego_v2", "yolo11n"]
 
     st.session_state['selected_model'] = st.sidebar.selectbox("Model", available_models)
     
     with st.form("task"):
 
         # Set iou_thres
-        iou = float(st.slider("Select confidence threshold",0.0, 1.00, 0.60))
+        iou = float(st.slider("Select IoU threshold",0.0, 1.00, 0.60))
 
         # set conf_thres
         conf = float(st.slider("Confidence Threshold", 0.0, 1.0, 0.60, 0.01))
@@ -97,6 +97,8 @@ if model_type == "Object detection":
 
         if st.session_state['selected_model'] == "lego_v1":
             class_names = ["block_1x2", "block_1x4_h", "block_2_8", "block_2x2_h", "wheel"]
+        elif st.session_state['selected_model'] == "lego_v2":
+            class_names = ['3003_dark_azure', '3004_black', '3004_sky_blue', '3010_sky_blue', '3020_black', '3022_black', '3034_turquoise', '3039_transparent', '3040a_black', '3137_wheel']
         elif st.session_state['selected_model'] == "yolo11n":
             class_names = ["person", "bus", "car"]
 
@@ -107,7 +109,6 @@ if model_type == "Object detection":
         if submit: 
 
             detection_task = ObjectDetection(id=st.session_state['selected_model'], pos=(250,200), data={'content': st.session_state['selected_model']}, conf=conf, iou=iou)
-            detection_task.load_model(st.session_state['selected_model'])
 
             st.session_state['nodes'].append(detection_task.node)
             st.session_state['node_object'].append(detection_task)

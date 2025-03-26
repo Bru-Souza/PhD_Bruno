@@ -56,16 +56,49 @@ class AssemblyVerification:
 
         return is_match, max_val, annotated_frame
 
-
+# if __name__ == "__main__":
+#     # Inicializa a classe de verificação
+#     verifier = AssemblyVerification(threshold=0.5)
+    
+#     # Carrega o template
+#     template_image = cv2.imread('templates_crop/template_02.png')
+#     verifier.set_template(template_image)
+    
+#     # Captura da câmera
+#     cap = cv2.VideoCapture(6)  # 0 para webcam padrão
+    
+#     if not cap.isOpened():
+#         print("Erro ao acessar a câmera.")
+#         exit()
+    
+#     while True:
+#         ret, frame = cap.read()
+#         if not ret:
+#             break
+        
+#         # Realiza a verificação
+#         match, probability, result_frame = verifier.verify(frame)
+        
+#         # Exibe os resultados
+#         cv2.putText(result_frame, f"Match: {match}, Prob: {probability:.2f}", (10, 30),
+#                     cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0) if match else (0, 0, 255), 2)
+#         cv2.imshow("Verification", result_frame)
+        
+#         # Pressione 'q' para sair
+#         if cv2.waitKey(1) & 0xFF == ord('q'):
+#             break
+    
+#     cap.release()
+#     cv2.destroyAllWindows()
 # Example usage
 if __name__ == "__main__":
     # Initialize the verification class
     verifier = AssemblyVerification(threshold=0.5)
 
     # Load the template and the test frame
-    template_image = cv2.imread('templates_crop/template_01.png')
+    template_image = cv2.imread('/home/bruno/projects/PhD_Bruno/app/lib/template_matching/template.jpeg')
     # test_frame = cv2.imread('templates_test/template_11.png')
-    test_frame = cv2.imread('snap_real_video_template_01.png')
+    test_frame = cv2.imread('testx.png')
     
 
     # Set the template

@@ -74,6 +74,9 @@ class AssemblyStepNode(Node):
         self.recognized: bool = False
         self.template_img_path = None
         self.template_img = None
+        self.instruction_img_path = None
+        self.instruction_img = None
+        self.instruction_text = None
         self.obj_cls = None
         self.obj_idx = None
         

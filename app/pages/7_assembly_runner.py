@@ -1,185 +1,92 @@
 import os
 import cv2
-import time
 import multiprocessing
 import streamlit as st
 
 os.environ['YOLO_VERBOSE'] = 'False'
 
+from lib.utils import get_next_experiment_filename
 from lib.template_matching.assembly_verification import AssemblyVerification
-from tasks.detection.tracking import CustomTrackZone
-
-# Sinal global para encerrar os processos
-stop_event = multiprocessing.Event()
-
-st.set_page_config(page_title="Assembly", page_icon="📺")
-st.title("Aseembly Runner")
-
-steps_order: list = []
-
-# Armazene os node_objects
-node_objects = st.session_state['node_object']
-
-# Botões de controle do assembly
-if st.button("Play Assembly"):
+from lib.pipeline import capture_frames_process, inference_process, display_process, projector_process, update_monitoring
     
-    if "assembly_runner" not in st.session_state:
-        st.session_state.assembly_runner = True
-        # st.session_state.model.load_model(st.session_state.selected_model)
+if __name__ == "__main__":
+    
+    # Sinal global para encerrar os processos
+    stop_event = multiprocessing.Event()
 
-    # Iterar sobre os ramos e obter os steps
-    for node in st.session_state['all_possible_branches'][0]:
-        if node.startswith("step"):
-            steps_order.append(node)
+    st.set_page_config(page_title="Assembly", page_icon="📺")
+    st.title("Aseembly Runner")
 
-    # Inicialização do verificador de template
-    assembly_verifier = AssemblyVerification()
+    # Inicializa a variável session_state para salvar o vídeo
+    if "save_video" not in st.session_state:
+        st.session_state.save_video = False
+    if "video" not in st.session_state:
+        st.session_state.video = None
 
-    def inference_process(frame_queue, prediction_queue, stop_event):
-        global step_number, complete
+    st.session_state.save_video = st.toggle("Save video")
 
-        region_points = []
+    # Botões de controle do assembly
+    if st.button("Play Assembly"):
 
-        # Define region points
-        if 'canvas_result' in st.session_state:
-            try:
-                x1 = st.session_state['canvas_result']["objects"][0]["left"]
-                w = st.session_state['canvas_result']["objects"][0]["width"]
-                y1 = st.session_state['canvas_result']["objects"][0]["top"]
-                h = st.session_state['canvas_result']["objects"][0]["height"]
-                x2 = x1 + w
-                y2 = y1 + h
+        base_folder = os.path.join(st.session_state.project_folder, "runs")
+        st.session_state.json_path = get_next_experiment_filename(base_folder, "json")
+
+        if st.session_state.save_video:
+            video_path = get_next_experiment_filename(base_folder, "mp4")
+
+            # Criando o arquivo de vídeo
+            fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+            st.session_state.video = cv2.VideoWriter(video_path, fourcc, 30.0, (640, 480))
+
+        # Show steps
+        st.subheader("Step list")
+        st.session_state.image_placeholders = {}
+        st.session_state.columns = {}
+        st.session_state.status_dict = {}
+
+        st.session_state.steps_order = []
+        # Iterar sobre os ramos e obter os steps
+        for node in st.session_state['all_possible_branches'][0]:
+            if node.startswith("step"):
+                st.session_state.steps_order.append(node)
+                st.session_state.status_dict[node] = False
+                st.session_state.columns[f"col1_{node}"], st.session_state.columns[f"col2_{node}"] = st.columns([3, 1])
+                with st.session_state.columns[f"col1_{node}"]:
+                    st.write(node)
                 
-                region_points = [(x1, y1), (x2, y1), (x2, y2), (x1, y2)]
-            except:
-                print("Error getting region points")
-
-        else:
-            print("No canvas result available")
-            h, w, _ = frame_queue.get().shape
-            region_points = [(0, 0), (w, 0), (w, h), (0, h)]
-
+                with st.session_state.columns[f"col2_{node}"]:
+                    # Criar um placeholder para a imagem
+                    st.session_state.image_placeholders[node] = st.empty()
         
-        # Init TrackZone (Object Tracking in Zones, not complete frame)
-        trackzone = CustomTrackZone(
-            show=False,  # Display the output
-            region=region_points,  # Pass region points
-            model=st.session_state.selected_model,  # You can use any model that Ultralytics support, i.e. YOLOv9, YOLOv10
-            line_width=2,  # Adjust the line width for bounding boxes and text display
-            verbose=False
-        )
+        # Inicialização do verificador de template
+        st.session_state.assembly_verifier = AssemblyVerification()
 
-        for step in steps_order:
-            current_step = step
+        # Queue para dados compartilhados entre processos
+        frame_queue = multiprocessing.Queue(maxsize=10)
+        prediction_queue = multiprocessing.Queue(maxsize=10)
+        projector_queue = multiprocessing.Queue(maxsize=10)
+        complete = multiprocessing.Value('b', False)
+        step_status = multiprocessing.Queue()
 
-            for obj in node_objects:
-                if obj.id == current_step:
-                    print(f"Current step: {current_step}")
+        step_status.put(st.session_state.status_dict)
 
-                    # Get current cls
-                    expected_class = obj.obj_idx
+        # Set dos processos
+        capture_frames_process = multiprocessing.Process(target=capture_frames_process, args=(frame_queue, stop_event))
+        inference_process = multiprocessing.Process(target=inference_process, args=(frame_queue, prediction_queue, step_status, projector_queue, stop_event))
+        display_process = multiprocessing.Process(target=display_process, args=(prediction_queue, stop_event))
+        projector_process = multiprocessing.Process(target=projector_process, args=(projector_queue, stop_event))
 
-                    # Get current template img
-                    expected_template = cv2.imread(obj.template_img_path)
-                    
-                    while obj.match == False and not stop_event.is_set():
-                        if not frame_queue.empty():
+        # Iniciar os processos
+        capture_frames_process.start()
+        inference_process.start()
+        display_process.start()
+        projector_process.start()
 
-                            frame = frame_queue.get()
+        update_monitoring(step_status)
 
-                            # Inferência
-                            annotated_frame, boxes, track_ids, clss = trackzone.trackzone(frame)
-
-                            # Iterate over boxes, track ids, classes indexes
-                            for box, track_id, cls in zip(boxes, track_ids, clss):
-                                if int(cls) == expected_class and obj.recognized is False:
-                                    assembly_track.add(cls)
-                                    obj.recognized = True
-                                    print(f"[INFO] Object {cls} was recognized.")
-
-                                    # Set template
-                                    assembly_verifier.set_template(expected_template)
-                                    break
-
-                            if obj.recognized is True and expected_template is not None:
-
-                                is_match, confidence, result_tamplate_img = assembly_verifier.verify(frame)
-                                is_match = True
-                                if is_match:
-                                    obj.match = True
-                                    print(f"[INFO] Step {obj.id} is done!")
-                                    step_number += 1
-                                    print(step_number, steps_order)
-                                    if step_number == len(steps_order):
-                                        print("[INFO] Assembly process is completed!")
-                                        complete.value = True
-                                        time.sleep(0.5)
-                                        print("[DEBUG] Setting stop_event...")
-                                        stop_event.set() 
-                                        break
-                            # Enviar o frame e as previsões para exibição
-                            if not prediction_queue.full():
-                                prediction_queue.put((annotated_frame, boxes))
-
-                        time.sleep(0.01)
-
-
-    # Queue para dados compartilhados entre processos
-    frame_queue = multiprocessing.Queue(maxsize=10)  # Limitar o tamanho da fila
-    prediction_queue = multiprocessing.Queue(maxsize=10)  # Limitar o tamanho da fila
-    complete = multiprocessing.Value('b', False)  # Garante o acesso compartilhado
-
-    # Rastrear o estado da montagem
-    assembly_track = set()
-    step_number = 0
-    active_parts_not_in_place = set({})
-
-    # Captura de frames em um processo separado
-    def capture_frames_process(frame_queue, stop_event):
-        cap = cv2.VideoCapture(0)
-
-        while not stop_event.is_set():
-            ret, frame = cap.read()
-            if not ret:
-                break
-
-            if not frame_queue.full():
-                frame_queue.put(frame)
-            time.sleep(0.03)  # Limitar a taxa de captura de frames
-
-        cap.release()
-        print("[INFO] Camera released")
-
-    # Função de exibição de frames
-    def display_process(prediction_queue, stop_event):
-        while not stop_event.is_set():
-            if not prediction_queue.empty():
-                frame, _ = prediction_queue.get()
-
-                cv2.imshow("Inference", frame)
-
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    stop_event.set() 
-                    break
-
-        cv2.destroyAllWindows()
-        print("[INFO] Display process exited")
-
-
-    # Set dos processos
-    capture_process = multiprocessing.Process(target=capture_frames_process, args=(frame_queue, stop_event))
-    inference_process = multiprocessing.Process(target=inference_process, args=(frame_queue, prediction_queue, stop_event))
-    display_process = multiprocessing.Process(target=display_process, args=(prediction_queue, stop_event))
-
-    # Iniciar os processos
-    capture_process.start()
-    inference_process.start()
-    display_process.start()
-
-    # Join todos os processos
-    capture_process.join()
-    inference_process.join()
-    display_process.join()
-
-
+        # Join todos os processos
+        capture_frames_process.join()
+        inference_process.join()
+        display_process.join()
+        projector_process.join()
 

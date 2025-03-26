@@ -21,30 +21,49 @@ if 'steps_id' not in st.session_state:
 # Recuperando o nome do step diretamente do session_state
 step_name = st.text_input("Create a step name", value=st.session_state.get('step_name', ""))
 
-# Carregar o arquivo de imagem
-uploaded_file = st.file_uploader("Selecione uma imagem de template", type=["jpg", "jpeg", "png"], key="file_uploader")
+# Carregar o arquivo de template
+template_file = st.file_uploader("Select template image", type=["jpg", "jpeg", "png"], key="template_uploader")
 
-# Verificar se o arquivo foi carregado
-if uploaded_file is not None:
-    # Ler a imagem usando o PIL
-    image = Image.open(uploaded_file)
-    #  Salvar a imagem
-    save_path = os.path.join(st.session_state.project_folder, "imgs")
-    # Criar a pasta caso não exista
-    os.makedirs(save_path, exist_ok=True)
-    
-    st.session_state['image_filename'] = os.path.join(save_path, uploaded_file.name)
-    image.save(st.session_state['image_filename'])
+# Carregar o arquivo de instrução
+instruction_file = st.file_uploader("Select instruction image", type=["jpg", "jpeg", "png"], key="instruction_uploader")
 
-    # Resize image
-    new_size = (280,280)
-    resized_img = image.resize(new_size)
-    
-    # Exibir a imagem no Streamlit
-    st.image(resized_img, caption="Imagem carregada")
+# Definir caminho base para salvar as imagens
+save_path = os.path.join(st.session_state.project_folder, "imgs")
+os.makedirs(save_path, exist_ok=True)  # Criar a pasta caso não exista
+
+# Inicializar colunas para exibição lado a lado
+col1, col2 = st.columns(2)
+
+# Processar e exibir a imagem do template
+if template_file is not None:
+    template_img = Image.open(template_file)
+    st.session_state['template_filename'] = os.path.join(save_path, template_file.name)
+    template_img.save(st.session_state['template_filename'])
+
+    # Redimensionar a imagem do template
+    resized_template = template_img.resize((280, 280))
+
+    # Exibir no Streamlit
+    with col1:
+        st.image(resized_template, caption="Template Image")
+
+# Processar e exibir a imagem de instrução
+if instruction_file is not None:
+    instruction_img = Image.open(instruction_file)
+    st.session_state['instruction_filename'] = os.path.join(save_path, instruction_file.name)
+    instruction_img.save(st.session_state['instruction_filename'])
+
+    # Exibir no Streamlit
+    with col2:
+        st.image(instruction_img, caption="Instruction Image")
 
 # Define a classe do objeto
 obj_cls = model_type = st.selectbox("Select the object class", st.session_state['selected_classes'], index=None, key=None, help=None, on_change=None, args=None, kwargs=None, placeholder="Choose an option")
+
+# Create an assembly instruction
+instruction_text = st.text_input("Assembly Instruction", "")
+if instruction_text is not None:
+    st.session_state['instruction_text'] = instruction_text
 
 # Cria o step e limpa os campos
 if st.button("Create step"):
@@ -66,7 +85,9 @@ if st.button("Create step"):
 
     assembly_step.obj_cls = obj_cls
     assembly_step.obj_idx = obj_idx
-    assembly_step.template_img_path = st.session_state['image_filename']
+    assembly_step.template_img_path = st.session_state['template_filename']
+    assembly_step.instruction_img_path = st.session_state['instruction_filename']
+    assembly_step.instruction_text = st.session_state['instruction_text']
 
     # Atualizar listas de nós
     st.session_state['nodes'].append(assembly_step.node)
@@ -75,4 +96,4 @@ if st.button("Create step"):
     st.session_state['node_object'].append(assembly_step)
 
     # Save step to project_file
-    update_project_file({"step_" + str(st.session_state['steps_id'][-1]): {"id": "step_" + str(st.session_state['steps_id'][-1]), "uploaded_file": st.session_state['image_filename'], "obj_cls": obj_cls, "obj_idx": obj_idx, "content": step_name}})
+    update_project_file({"step_" + str(st.session_state['steps_id'][-1]): {"id": "step_" + str(st.session_state['steps_id'][-1]), "template_file": st.session_state['template_filename'], "instruction_file": st.session_state['instruction_filename'], "obj_cls": obj_cls, "instruction_text": st.session_state['instruction_text'] ,"obj_idx": obj_idx, "content": step_name}})

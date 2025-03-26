@@ -7,6 +7,13 @@ torch.classes.__path__ = []
 
 from lib.utils import save_project_to_json, get_project_data, create_log_file, setup_logger
 
+def get_next_experiment_filename(base_folder):
+    os.makedirs(base_folder, exist_ok=True)
+    exp_num = 1
+    while os.path.exists(os.path.join(base_folder, f"exp_{exp_num:02d}.mp4")):
+        exp_num += 1
+    return os.path.join(base_folder, f"exp_{exp_num:02d}.mp4")
+
 # Set YOLO to quiet mode
 os.environ['YOLO_VERBOSE'] = 'False'
 
@@ -59,8 +66,7 @@ else:
 
     if loaded_project_file is not None:
         try:
-            st.session_state.project_folder = os.path.dirname(loaded_project_file.name)
-
+            st.session_state.project_folder = os.getcwd() + "/projects/project_" + os.path.splitext(loaded_project_file.name)[0] + "/"
             # Carregar o conteúdo do arquivo JSON
             project_data = json.load(loaded_project_file)
             st.success("Project loaded successfully!")

@@ -18,16 +18,18 @@ if 'frame_set' not in st.session_state:
     st.session_state.frame_set = False
 
 current_frame = None
+current_frame_h = None
+current_frame_w = None
 
 if not st.session_state.frame_set or st.button("Get frame"):
     st.session_state.video_running = True
-    time.sleep(1)
     st.session_state['node_object'][0].initialize_video()
-    time.sleep(1)
+    time.sleep(3)
     current_frame = st.session_state['node_object'][0].get_frame()
-
+    time.sleep(3)
     if current_frame is not None:
         st.session_state.frame_set = True
+        current_frame_h, current_frame_w, _ = current_frame.shape
     else:
         st.warning("No frames available.")
 
@@ -37,6 +39,8 @@ if st.session_state.frame_set:
     if isinstance(current_frame, np.ndarray):
         current_frame = cv2.cvtColor(current_frame, cv2.COLOR_BGR2RGB)
         current_frame = Image.fromarray(current_frame)
+        output_path = st.session_state.project_folder + "/ROI.png"
+        current_frame.save(output_path)
 
     if st.session_state.video_running == True:
         # Close video props
@@ -54,7 +58,7 @@ if st.session_state.frame_set:
         stroke_color="000000",
         background_image=current_frame,
         update_streamlit=False,
-        height=360,
+        height=480,
         width=640,
         drawing_mode=drawing_mode,
         point_display_radius=0,
