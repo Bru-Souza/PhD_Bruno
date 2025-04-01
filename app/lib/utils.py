@@ -1,5 +1,5 @@
 '''
-Lib functions
+Lib for util functions
 
 '''
 import os
@@ -70,15 +70,17 @@ def find_all_paths(graph, start_node, end_node):
 
 
 def find_terminal_nodes(graph):
-    # Encontra nós que não têm conexões de saída (terminais)
-    all_sources = set(graph.keys())  # Nós que são fonte de uma conexão
-    all_targets = {target for targets in graph.values() for target in targets}  # Todos os nós que são alvo de conexões
-    terminal_nodes = list(all_targets - all_sources)  # Nós que só são alvo (não têm saída)
+    # Finds nodes that have no outgoing connections (terminals)
+    all_sources = set(graph.keys())  # Nodes that are the source of a connection
+    all_targets = {target for targets in graph.values() for target in targets} # All nodes that are targets of connections
+    terminal_nodes = list(all_targets - all_sources)  # Nodes that are only targets (have no way out)
     return terminal_nodes
 
 
-# Função para salvar o dicionário do projeto em um arquivo JSON
 def save_project_to_json(project_name):
+    """
+    Function to save the project dictionary to a JSON file
+    """
 
     # Define o caminho da pasta do projeto
     st.session_state.project_folder = os.path.join(os.getcwd(), f"projects/project_{project_name}")
@@ -115,7 +117,8 @@ def update_project_file(new_data):
 
 
 def get_project_data(project_data):
-    # Inicializar variáveis de sessão se não existirem
+    logging.info("Getting project data.")
+    # Initialize session variables if they do not exist
     if 'nodes' not in st.session_state:
         st.session_state['nodes'] = []
     if 'node_object' not in st.session_state:
@@ -129,11 +132,11 @@ def get_project_data(project_data):
     if 'count' not in st.session_state:
         st.session_state['count'] = 0
     
-    # Atribuir variáveis de sessão principais
+    # Assign core session variables
     st.session_state.uploaded_file_path = project_data.get('camera_device', None)
     st.session_state.video_running = False
     
-    # Criar o InputNode
+    # Create Input Node
     input_node = InputNode(
         id="input_1",
         pos=(100, 200),
@@ -143,10 +146,10 @@ def get_project_data(project_data):
     st.session_state['nodes'].append(input_node.node)
     st.session_state['node_object'].append(input_node)
     
-    # Restaurar informações do canvas
+    # Restore canvas information
     st.session_state["canvas_result"] = project_data.get("canvas_result", {})
     
-    # Configuração do modelo
+    # Model configuration
     model_data = project_data.get("model", {})
     selected_model = model_data.get("selected_model", "")
     iou = model_data.get("iou", 0.6)
@@ -168,11 +171,11 @@ def get_project_data(project_data):
     st.session_state['selected_ind'] = selected_ind
     st.session_state['selected_model'] = selected_model
 
-    # Inicializa variavel para armazenar o modelo
+    # Initializes variable to store the model
     if 'model' not in st.session_state:
         st.session_state['model'] = detection_task
 
-    # Processar os steps
+    # Load the steps
     for key, value in project_data.items():
         if key.startswith("step_"):
 
@@ -211,6 +214,7 @@ def get_next_experiment_filename(base_folder, extension):
         exp_num += 1
     return os.path.join(base_folder, f"exp_{exp_num:02d}.{extension}")
 
+
 def append_to_json(json_path, new_data):
     if os.path.exists(json_path):
         with open(json_path, "r") as json_file:
@@ -221,9 +225,9 @@ def append_to_json(json_path, new_data):
     else:
         data = {}
 
-    # Atualiza os dados
+    # Update the data
     data.update(new_data)
 
-    # Reescreve o JSON com os dados atualizados
+    # Rewrites the JSON with the updated data
     with open(json_path, "w") as json_file:
         json.dump(data, json_file, indent=4)

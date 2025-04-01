@@ -34,8 +34,4 @@ while True:
 cap.release()
 cv2.destroyAllWindows()
 
-# import screeninfo
 
-# monitors = screeninfo.get_monitors()
-# for monitor in monitors:
-#     print(f"Monitor: {monitor}")

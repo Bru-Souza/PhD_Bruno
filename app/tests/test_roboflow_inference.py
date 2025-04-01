@@ -5,7 +5,7 @@ import supervision as sv
 from inference import get_model
 
 # define the image url to use for inference
-image_file = "/home/bruno/projects/LEGO.v1i.yolov11/test/images/frame_5_jpg.rf.37b50e350339ed143d5680daa75063dc.jpg"
+image_file = ""
 image = cv2.imread(image_file)
 
 # load a pre-trained yolov8n model

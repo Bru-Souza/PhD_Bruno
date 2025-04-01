@@ -4,7 +4,6 @@ import numpy as np
 
 os.environ['YOLO_VERBOSE'] = 'False'
 
-# from ultralytics.solutions.solutions import BaseSolution
 from tasks.detection.solutions import BaseSolution
 from ultralytics.utils.plotting import Annotator, colors
 

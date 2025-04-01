@@ -1,3 +1,4 @@
+import logging
 import streamlit as st
 
 from lib.nodes import *
@@ -6,20 +7,22 @@ from lib.utils import *
 from streamlit_flow import streamlit_flow
 from streamlit_flow.state import StreamlitFlowState
 
-# Inicializa o estado da sessão
+# Initializes the session state
 if 'edges' not in st.session_state and "output_1" not in st.session_state['node_object']:
     st.session_state['edges'] = []
     st.session_state.flow_state = StreamlitFlowState(st.session_state['nodes'], st.session_state['edges'])
     
+    # Create output node
     output_node = OutputNode(id="output_1", pos=(600, 200), data={'content': 'Output Node'})
 
+    # Add output node to session state
     st.session_state.flow_state.nodes.append(output_node.node)
         
-    # Adiciona o objeto node completo a sessão
+    # Add the complete node object to the session
     st.session_state['node_object'].append(output_node)
 
 
-# Renderiza o fluxo de trabalho atual
+# Renders the current workflow
 st.session_state.flow_state = streamlit_flow('flow', 
 								st.session_state.flow_state,
 								fit_view=False, 
@@ -33,12 +36,12 @@ st.session_state.flow_state = streamlit_flow('flow',
                                 )
 
 
-# Botão para salvar o novo flow de tasks
+# Button to save the new task flow
 if st.button("Define flow", type="primary"):
-    # Verificar conexões
+    # Check connections
     edges = st.session_state.flow_state.edges
     
-    # Passo 1: Construir o grafo como um dicionário de adjacências
+    # Step 1: Construct the graph as an adjacency dictionary
     graph = {}
     for edge in edges:
         source = edge.source
@@ -50,8 +53,7 @@ if st.button("Define flow", type="primary"):
 
     start_node = 'input_1'
     terminal_nodes = find_terminal_nodes(graph)
-    # Executar a busca
-    print(graph)
+    # Execute the search
     all_possible_branches = []
     for end_node in terminal_nodes:
         paths = find_all_paths(graph, start_node, end_node)
@@ -64,3 +66,4 @@ if st.button("Define flow", type="primary"):
 
     st.success("The new task flow was defined.")
     logging.info("The new task flow was defined.")
+    logging.info(f"Possible flow branchs: {all_possible_branches}.")

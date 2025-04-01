@@ -29,6 +29,3 @@ class ObjectDetection(TaskNode):
     def set_selected_ind(self, selected_ind: list):
         self.selected_ind = selected_ind
         return
-
-    def preprocess_roi(self):
-        return
