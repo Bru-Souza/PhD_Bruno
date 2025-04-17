@@ -6,7 +6,7 @@ import cv2
 
 from ultralytics import YOLO
 from ultralytics.utils import ASSETS_URL, DEFAULT_CFG_DICT, DEFAULT_SOL_DICT, LOGGER
-from ultralytics.utils.checks import check_imshow, check_requirements
+from ultralytics.utils.checks import check_requirements
 
 
 class BaseSolution:
@@ -70,7 +70,7 @@ class BaseSolution:
         DEFAULT_CFG_DICT.update(kwargs)
         self.CFG = {**DEFAULT_SOL_DICT, **DEFAULT_CFG_DICT}
         LOGGER.info(f"Ultralytics Solutions: ✅ {DEFAULT_SOL_DICT}")
-
+        LOGGER.info(f"Ultralytics Solutions: ✅ {DEFAULT_CFG_DICT}")
         self.region = self.CFG["region"]  # Store region data for other classes usage
         self.line_width = (
             self.CFG["line_width"] if self.CFG["line_width"] is not None else 2

@@ -1,0 +1,14 @@
+train: /home/bruno/projects/LEGO-v2.v2i.yolov11/train/images
+val: /home/bruno/projects/LEGO-v2.v2i.yolov11/valid/images
+test: /home/bruno/projects/LEGO-v2.v2i.yolov11/test/images
+
+
+nc: 10
+names: ['3003_dark_azure', '3004_black', '3004_sky_blue', '3010_sky_blue', '3020_black', '3022_black', '3034_turquoise', '3039_transparent', '3040a_black', '3137_wheel']
+
+roboflow:
+  workspace: new-workspace-aoxjd
+  project: lego-v2
+  version: 2
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/new-workspace-aoxjd/lego-v2/dataset/2

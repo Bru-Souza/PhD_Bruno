@@ -1,0 +1,254 @@
+{
+    "project_name": "test_complete_video",
+    "videoSrc_type": "Video file",
+    "source": "video_gravado_lab.avi",
+    "canvas_result": {
+        "version": "4.4.0",
+        "objects": [
+            {
+                "type": "rect",
+                "version": "4.4.0",
+                "originX": "left",
+                "originY": "top",
+                "left": 356,
+                "top": 463,
+                "width": 346,
+                "height": 246,
+                "fill": "rgba(77, 145, 207, 0.3)",
+                "stroke": "000000",
+                "strokeWidth": 3,
+                "strokeDashArray": null,
+                "strokeLineCap": "butt",
+                "strokeDashOffset": 0,
+                "strokeLineJoin": "miter",
+                "strokeUniform": true,
+                "strokeMiterLimit": 4,
+                "scaleX": 1,
+                "scaleY": 1,
+                "angle": 0,
+                "flipX": false,
+                "flipY": false,
+                "opacity": 1,
+                "shadow": null,
+                "visible": true,
+                "backgroundColor": "",
+                "fillRule": "nonzero",
+                "paintFirst": "fill",
+                "globalCompositeOperation": "source-over",
+                "skewX": 0,
+                "skewY": 0,
+                "rx": 0,
+                "ry": 0
+            }
+        ]
+    },
+    "model": {
+        "selected_model": "lego_v3",
+        "iou": 0.5,
+        "conf": 0.45,
+        "selected_ind": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+        ],
+        "selected_classes": [
+            "3003_dark_azure",
+            "3004_black",
+            "3004_sky_blue",
+            "3010_sky_blue",
+            "3020_black",
+            "3022_black",
+            "3034_turquoise",
+            "3039_transparent",
+            "3040a_black",
+            "3137_wheel"
+        ]
+    },
+    "step_1": {
+        "id": "step_1",
+        "template_file": "/home/bruno/projects/PhD_Bruno/app/lib/template_matching/test_template/video_frames_crop/frame_00.jpg",
+        "instruction_file": "/home/bruno/projects/PhD_Bruno/app/projects/project_test_complete/imgs/thi_assembly_instructions_page-0003.jpg",
+        "obj_cls": "3034_turquoise",
+        "instruction_text": "Insert the first 3004_turquoise.",
+        "obj_idx": 6,
+        "content": "01",
+        "obj_match_conf": 0.5
+    },
+    "step_2": {
+        "id": "step_2",
+        "template_file": "/home/bruno/projects/PhD_Bruno/app/lib/template_matching/test_template/video_frames_crop/frame_01.jpg",
+        "instruction_file": "/home/bruno/projects/PhD_Bruno/app/projects/project_test_complete/imgs/thi_assembly_instructions_page-0003.jpg",
+        "obj_cls": "3034_turquoise",
+        "instruction_text": "Insert the second 3004_turquoise on the side.",
+        "obj_idx": 6,
+        "content": "02",
+        "obj_match_conf": 0.7
+    },
+    "step_3": {
+        "id": "step_3",
+        "template_file": "/home/bruno/projects/PhD_Bruno/app/lib/template_matching/test_template/video_frames_crop/frame_02.jpg",
+        "instruction_file": "/home/bruno/projects/PhD_Bruno/app/projects/project_test_complete/imgs/thi_assembly_instructions_page-0004.jpg",
+        "obj_cls": "3010_sky_blue",
+        "instruction_text": "Insert the first 3010 sky_blue  on the top.",
+        "obj_idx": 3,
+        "content": "03",
+        "obj_match_conf": 0.7
+    },
+    "step_4": {
+        "id": "step_4",
+        "template_file": "/home/bruno/projects/PhD_Bruno/app/lib/template_matching/test_template/video_frames_crop/frame_03.jpg",
+        "instruction_file": "/home/bruno/projects/PhD_Bruno/app/projects/project_test_complete/imgs/thi_assembly_instructions_page-0005.jpg",
+        "obj_cls": "3010_sky_blue",
+        "instruction_text": "Insert the second 3010 sky_blue.",
+        "obj_idx": 3,
+        "content": "04",
+        "obj_match_conf": 0.7
+    },
+    "step_5": {
+        "id": "step_5",
+        "template_file": "/home/bruno/projects/PhD_Bruno/app/lib/template_matching/test_template/video_frames_crop/frame_04.jpg",
+        "instruction_file": "/home/bruno/projects/PhD_Bruno/app/projects/project_test_complete/imgs/thi_assembly_instructions_page-0006.jpg",
+        "obj_cls": "3004_sky_blue",
+        "instruction_text": "Insert the 3004 blue piece on the right side.",
+        "obj_idx": 2,
+        "content": "05",
+        "obj_match_conf": 0.7
+    },
+    "step_6": {
+        "id": "step_6",
+        "template_file": "/home/bruno/projects/PhD_Bruno/app/lib/template_matching/test_template/video_frames_crop/frame_05.jpg",
+        "instruction_file": "/home/bruno/projects/PhD_Bruno/app/projects/project_test_complete/imgs/thi_assembly_instructions_page-0007.jpg",
+        "obj_cls": "3004_sky_blue",
+        "instruction_text": "Insert the 3004 blue piece on the left side.",
+        "obj_idx": 2,
+        "content": "06",
+        "obj_match_conf": 0.7
+    },
+    "step_7": {
+        "id": "step_7",
+        "template_file": "/home/bruno/projects/PhD_Bruno/app/lib/template_matching/test_template/video_frames_crop/frame_06.jpg",
+        "instruction_file": "/home/bruno/projects/PhD_Bruno/app/projects/project_test_complete/imgs/thi_assembly_instructions_page-0008.jpg",
+        "obj_cls": "3003_dark_azure",
+        "instruction_text": "Insert the 3003 piece on the center.",
+        "obj_idx": 0,
+        "content": "07",
+        "obj_match_conf": 0.7
+    },
+    "step_8": {
+        "id": "step_8",
+        "template_file": "/home/bruno/projects/PhD_Bruno/app/lib/template_matching/test_template/video_frames_crop/frame_07.jpg",
+        "instruction_file": "/home/bruno/projects/PhD_Bruno/app/projects/project_test_complete/imgs/thi_assembly_instructions_page-0009.jpg",
+        "obj_cls": "3137_wheel",
+        "instruction_text": "Insert the 1st wheel on the bottom",
+        "obj_idx": 9,
+        "content": "08",
+        "obj_match_conf": 0.7
+    },
+    "step_9": {
+        "id": "step_9",
+        "template_file": "/home/bruno/projects/PhD_Bruno/app/lib/template_matching/test_template/video_frames_crop/frame_08.jpg",
+        "instruction_file": "/home/bruno/projects/PhD_Bruno/app/projects/project_test_complete/imgs/thi_assembly_instructions_page-0010.jpg",
+        "obj_cls": "3137_wheel",
+        "instruction_text": "Insert the 2st wheel on the top.",
+        "obj_idx": 9,
+        "content": "09",
+        "obj_match_conf": 0.7
+    },
+    "step_10": {
+        "id": "step_10",
+        "template_file": "/home/bruno/projects/PhD_Bruno/app/lib/template_matching/test_template/video_frames_crop/frame_09.jpg",
+        "instruction_file": "/home/bruno/projects/PhD_Bruno/app/projects/project_test_complete/imgs/thi_assembly_instructions_page-0011.jpg",
+        "obj_cls": "3039_transparent",
+        "instruction_text": "Insert the 1st transparent on the bottom center.",
+        "obj_idx": 7,
+        "content": "10",
+        "obj_match_conf": 0.7
+    },
+    "step_11": {
+        "id": "step_11",
+        "template_file": "/home/bruno/projects/PhD_Bruno/app/lib/template_matching/test_template/video_frames_crop/frame_10.jpg",
+        "instruction_file": "/home/bruno/projects/PhD_Bruno/app/projects/project_test_complete/imgs/thi_assembly_instructions_page-0012.jpg",
+        "obj_cls": "3039_transparent",
+        "instruction_text": "Insert the 2st transparent on the left.",
+        "obj_idx": 7,
+        "content": "11",
+        "obj_match_conf": 0.7
+    },
+    "step_12": {
+        "id": "step_12",
+        "template_file": "/home/bruno/projects/PhD_Bruno/app/lib/template_matching/test_template/video_frames_crop/frame_10.jpg",
+        "instruction_file": "/home/bruno/projects/PhD_Bruno/app/projects/project_test_complete/imgs/thi_assembly_instructions_page-0013.jpg",
+        "obj_cls": "3039_transparent",
+        "instruction_text": "Insert the 3rd transparent on the right.",
+        "obj_idx": 7,
+        "content": "12",
+        "obj_match_conf": 0.58
+    },
+    "step_13": {
+        "id": "step_13",
+        "template_file": "/home/bruno/projects/PhD_Bruno/app/lib/template_matching/test_template/video_frames_crop/frame_12.jpg",
+        "instruction_file": "/home/bruno/projects/PhD_Bruno/app/projects/project_test_complete/imgs/thi_assembly_instructions_page-0014.jpg",
+        "obj_cls": "3040a_black",
+        "instruction_text": "Insert the 1st 3040a on bottom left.",
+        "obj_idx": 8,
+        "content": "13",
+        "obj_match_conf": 0.7
+    },
+    "step_14": {
+        "id": "step_14",
+        "template_file": "/home/bruno/projects/PhD_Bruno/app/lib/template_matching/test_template/video_frames_crop/frame_13.jpg",
+        "instruction_file": "/home/bruno/projects/PhD_Bruno/app/projects/project_test_complete/imgs/thi_assembly_instructions_page-0015.jpg",
+        "obj_cls": "3040a_black",
+        "instruction_text": "Insert the 2nd 3040a on bottom right.",
+        "obj_idx": 8,
+        "content": "14",
+        "obj_match_conf": 0.7
+    },
+    "step_15": {
+        "id": "step_15",
+        "template_file": "/home/bruno/projects/PhD_Bruno/app/lib/template_matching/test_template/video_frames_crop/frame_14.jpg",
+        "instruction_file": "/home/bruno/projects/PhD_Bruno/app/projects/project_test_complete/imgs/thi_assembly_instructions_page-0016.jpg",
+        "obj_cls": "3004_black",
+        "instruction_text": "Insert the 1st  3004 on right side.",
+        "obj_idx": 1,
+        "content": "15",
+        "obj_match_conf": 0.6
+    },
+    "step_16": {
+        "id": "step_16",
+        "template_file": "/home/bruno/projects/PhD_Bruno/app/lib/template_matching/test_template/video_frames_crop/frame_15.jpg",
+        "instruction_file": "/home/bruno/projects/PhD_Bruno/app/projects/project_test_complete/imgs/thi_assembly_instructions_page-0017.jpg",
+        "obj_cls": "3004_black",
+        "instruction_text": "Insert the 2nd  3004 on left side.",
+        "obj_idx": 1,
+        "content": "16",
+        "obj_match_conf": 0.6
+    },
+    "step_17": {
+        "id": "step_17",
+        "template_file": "/home/bruno/projects/PhD_Bruno/app/lib/template_matching/test_template/video_frames_crop/frame_16.jpg",
+        "instruction_file": "/home/bruno/projects/PhD_Bruno/app/projects/project_test_complete/imgs/thi_assembly_instructions_page-0018.jpg",
+        "obj_cls": "3022_black",
+        "instruction_text": "Insert the 1st  3022 on left side.",
+        "obj_idx": 5,
+        "content": "17",
+        "obj_match_conf": 0.7
+    },
+    "step_18": {
+        "id": "step_18",
+        "template_file": "/home/bruno/projects/PhD_Bruno/app/lib/template_matching/test_template/video_frames_crop/frame_17.jpg",
+        "instruction_file": "/home/bruno/projects/PhD_Bruno/app/projects/project_test_complete/imgs/thi_assembly_instructions_page-0019.jpg",
+        "obj_cls": "3022_black",
+        "instruction_text": "Insert the 2nd  3022 on right side.",
+        "obj_idx": 5,
+        "content": "18",
+        "obj_match_conf": 0.7
+    }
+}

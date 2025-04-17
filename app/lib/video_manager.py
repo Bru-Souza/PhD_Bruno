@@ -14,6 +14,8 @@ class VideoManager:
         """Inicializa a fonte de vídeo de acordo com o tipo"""
         if self.source_type == "file":
             self.cap = cv2.VideoCapture(self.source)
+            self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+            self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
         elif self.source_type == "ip":
             self.cap = cv2.VideoCapture(f"http://{self.source}/video")
         else:

@@ -1,6 +1,8 @@
 import os
 import cv2
 import time
+import logging
+import numpy as np
 import streamlit as st
 
 from lib.utils import append_to_json
@@ -8,11 +10,11 @@ from tasks.detection.tracking import CustomTrackZone
 
 
 def inference_process(frame_queue, prediction_queue, step_status, projector_queue, stop_event):
-    
+    logging.info("Inference process started.")
     # Start experiment timer
     startExp_time = time.time()
 
-    # Rastrear o estado da montagem
+    # Track assembly step
     step_number = 0
     region_points = []
 
@@ -35,22 +37,26 @@ def inference_process(frame_queue, prediction_queue, step_status, projector_queu
         h, w, _ = frame_queue.get().shape
         region_points = [(0, 0), (w, 0), (w, h), (0, h)]
 
-    
+    # Define ROI for template matching
+    st.session_state.assembly_verifier.set_region_points(region_points)
+
     # Init TrackZone (Object Tracking in Zones, not complete frame)
     model_path = os.getcwd() + "/models/" + st.session_state.selected_model.lower() + ".pt"
     trackzone = CustomTrackZone(
         show=False,  # Display the output
         region=region_points,  # Pass region points
-        model=model_path,  # You can use any model that Ultralytics support, i.e. YOLOv9, YOLOv10
+        model=model_path,
         line_width=2,  # Adjust the line width for bounding boxes and text display
         classes=st.session_state['selected_ind'],
+        iou=st.session_state.model_iou,
+        conf=st.session_state.model_conf,
         verbose=False
     )
 
     # Recognized ids storage
     st.session_state.recognized_ids = set()
     
-    # Armazene os node_objects
+    # Store node_objects
     node_objects = st.session_state['node_object']
 
     for step in st.session_state.steps_order:
@@ -78,8 +84,8 @@ def inference_process(frame_queue, prediction_queue, step_status, projector_queu
                     if not frame_queue.empty():
                         # Get image frame
                         frame = frame_queue.get()
-
-                        # Inferência
+                        frame_cp = frame.copy()
+                        # Infer
                         annotated_frame, boxes, track_ids, clss = trackzone.trackzone(frame)
 
                         if len(boxes) == 0:
@@ -100,9 +106,9 @@ def inference_process(frame_queue, prediction_queue, step_status, projector_queu
 
                         if obj.recognized is True and expected_template is not None:
                             assembly_info = "Performing template matching..."
-                            is_match, confidence, result_tamplate_img = st.session_state.assembly_verifier.verify(frame)
-                            is_match = True
-                            if is_match:
+                            is_match, confidence, result_tamplate_img = st.session_state.assembly_verifier.verify(frame_cp)
+                            if is_match and confidence >= obj.obj_match_conf:
+                                print(f"[INFO] Template matching confidence: {confidence}.")
                                 # Save template matching result
                                 tm_img_path = st.session_state.project_folder + f"/template_matching_{current_step}.png"
                                 cv2.imwrite(tm_img_path, result_tamplate_img)
@@ -110,6 +116,7 @@ def inference_process(frame_queue, prediction_queue, step_status, projector_queu
                                 obj.match = True
                                 st.session_state.status_dict[obj.id] = True
                                 step_status.put(st.session_state.status_dict)
+                                projector_queue.put(("flash_green",))
                                 print(f"[INFO] Step {obj.id} is done!")
                                 endStep_time = time.time()
                                 totalStep_time = endStep_time - startStep_time
@@ -120,33 +127,36 @@ def inference_process(frame_queue, prediction_queue, step_status, projector_queu
                                 if step_number == len(st.session_state.steps_order):
                                     print("[INFO] Assembly process is completed!")
                                     assembly_info = "Assembly process is completed!"
-                                    
+                                    logging.info("Assembly process completed.")
+
                                     # Stop experiment timer
                                     endExp_time = time.time()
                                     totalExp_time = endExp_time - startExp_time
                                     append_to_json(st.session_state.json_path, {"Total experiment time": totalExp_time})
-
-
                                     time.sleep(0.5)
-                                    
-                                    print("[DEBUG] Setting stop_event...")
                                     stop_event.set() 
-                                    break
+                                    logging.info("Setting stop_event.")
                         
-                        # Enviar o frame e as previsões para exibição
+                        # Send frame and detections for visualization
                         if not prediction_queue.full():
                             prediction_queue.put((annotated_frame, boxes))
                         
-                        # Enviar projecoes
+                        # Send projections
                         if not projector_queue.full():
                             projector_queue.put((assembly_visual_instruction, assembly_info, assembly_text_instruction))
 
                     time.sleep(0.01)
 
 
-# Captura de frames em um processo separado
 def capture_frames_process(frame_queue, stop_event):
+    """
+    Capturing frames in a separate process
+    """
+    logging.info("Capture frame process started.")
     cap = cv2.VideoCapture(st.session_state.uploaded_file_path)
+
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 
     while not stop_event.is_set():
         ret, frame = cap.read()
@@ -155,20 +165,24 @@ def capture_frames_process(frame_queue, stop_event):
 
         if not frame_queue.full():
             frame_queue.put(frame)
-        time.sleep(0.03)  # Limitar a taxa de captura de frames
+        time.sleep(0.03)
 
     cap.release()
+    logging.info("Camera released.")
     print("[INFO] Camera released")
 
 
-# Função de exibição de frames
 def display_process(prediction_queue, stop_event):
+    """
+    Função de exibição de frames    
+    """
+    logging.info("Display frame process started.")
 
     while not stop_event.is_set():
         if not prediction_queue.empty():
             frame, _ = prediction_queue.get()
 
-            # Salva o frame no vídeo, se necessário
+            # Save video frame
             if st.session_state.video:
                 st.session_state.video.write(frame)
 
@@ -183,47 +197,80 @@ def display_process(prediction_queue, stop_event):
     
     cv2.destroyAllWindows()
     print("[INFO] Display process exited")
-
+    logging.info("Display frame process exited.")
 
 
 def projector_process(projector_queue, stop_event):
-    # Nome da janela
+    logging.info("Projector process started.")
+
+    # Set window name
     window_name = "Frame Projetado"
 
-    # Criar a janela como NORMAL para evitar problemas de exibição
+    # Create the window as NORMAL to avoid display issues
     cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
 
-    # Mover a janela para o projetor (HDMI-2)
+    # Move window to projector (HDMI-2)
     # cv2.moveWindow(window_name, 1920, 0)
 
-    # Ajustar o tamanho manualmente
+    # Adjust the size manually
     # cv2.resizeWindow(window_name, 1920, 1079)
 
-    # Garantir que a janela está em tela cheia no projetor
+    # Ensure the window is full screen on the projector
     cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
     while not stop_event.is_set():
         if not projector_queue.empty():
-            frame, text_info, text_instruction = projector_queue.get()
 
-            # Obter dimensões do frame
+            item = projector_queue.get()
+
+            # Check special command
+            if isinstance(item, tuple) and isinstance(item[0], str) and item[0] == "flash_green":
+                logging.info("Received green flash command.")
+                
+                # Create green signal 3s
+                green_frame = np.zeros((720, 1280, 3), dtype=np.uint8)
+                green_frame[:] = (0, 200, 0)  # Verde
+
+                # Define duration
+                duration = 3  # seconds
+                interval = 0.25  # seconds
+                start_time = time.time()
+
+                toggle = True
+                
+                while time.time() - start_time < duration and not stop_event.is_set():
+                    frame_to_show = green_frame if toggle else rotated_frame
+                    rotated = cv2.rotate(frame_to_show, cv2.ROTATE_180)
+                    cv2.imshow(window_name, frame_to_show)
+
+                    if cv2.waitKey(1) & 0xFF == ord('q'):
+                        stop_event.set()
+                        break
+
+                    time.sleep(interval)
+                    toggle = not toggle
+                continue
+            
+            frame, text_info, text_instruction = item
+
+            # Get frame dimensions
             height, width, _ = frame.shape
-            bar_height = 50  # Altura da faixa preta
+            bar_height = 50  #Black band height
 
-            # Definir propriedades do texto
+            # Set text properties
             font = cv2.FONT_HERSHEY_SIMPLEX
             font_scale = 3
-            text_color = (255, 255, 255)  # Branco
+            text_color = (255, 255, 255)  # white
             thickness = 2
-            padding = 10  # Espaço extra ao redor do texto
-            line_spacing = 20  # Espaço entre os textos
+            padding = 10  # Extra space around text
+            line_spacing = 20  # Space between texts
 
-            # ---- Adicionar text_instruction (PRIMEIRO TEXTO) ----
+            # ---- Add text_instruction (FIRST TEXT) ----
             text_size_instr = cv2.getTextSize(text_instruction, font, font_scale, thickness)[0]
-            text_x_instr = (width - text_size_instr[0]) // 2  # Centralizar no eixo X
-            text_y_instr = bar_height + 50  # Ajustar no eixo Y
+            text_x_instr = (width - text_size_instr[0]) // 2  # Center on X axis
+            text_y_instr = bar_height + 50  # Snap to Y axis
 
-            # Retângulo de fundo do primeiro texto
+            # First text background rectangle
             rect_x1 = text_x_instr - padding
             rect_y1 = text_y_instr - text_size_instr[1] - padding
             rect_x2 = text_x_instr + text_size_instr[0] + padding
@@ -232,12 +279,12 @@ def projector_process(projector_queue, stop_event):
             cv2.rectangle(frame, (rect_x1, rect_y1), (rect_x2, rect_y2), (0, 0, 0), -1)
             cv2.putText(frame, text_instruction, (text_x_instr, text_y_instr), font, font_scale, text_color, thickness, cv2.LINE_AA)
 
-            # ---- Adicionar text_info (SEGUNDO TEXTO, LOGO ABAIXO) ----
+            #---- Add text_info (SECOND TEXT) ----
             text_size_info = cv2.getTextSize(text_info, font, font_scale, thickness)[0]
-            text_x_info = (width - text_size_info[0]) // 2  # Centralizar no eixo X
-            text_y_info = text_y_instr + text_size_instr[1] + line_spacing  # Ajustar abaixo do primeiro texto
+            text_x_info = (width - text_size_info[0]) // 2  # Center on X axis
+            text_y_info = text_y_instr + text_size_instr[1] + line_spacing  # Fit below first text
 
-            # Retângulo de fundo do segundo texto
+            # Second text background rectangle
             rect_x1_info = text_x_info - padding
             rect_y1_info = text_y_info - text_size_info[1] - padding
             rect_x2_info = text_x_info + text_size_info[0] + padding
@@ -246,8 +293,9 @@ def projector_process(projector_queue, stop_event):
             cv2.rectangle(frame, (rect_x1_info, rect_y1_info), (rect_x2_info, rect_y2_info), (0, 0, 0), -1)
             cv2.putText(frame, text_info, (text_x_info, text_y_info), font, font_scale, text_color, thickness, cv2.LINE_AA)
 
-            # Exibir o frame no projetor
-            cv2.imshow(window_name, frame)
+            rotated_frame = cv2.rotate(frame, cv2.ROTATE_180)
+            # Display the frame on the projector
+            cv2.imshow(window_name, rotated_frame)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 stop_event.set()
@@ -255,9 +303,12 @@ def projector_process(projector_queue, stop_event):
 
     cv2.destroyAllWindows()
     print("[INFO] Projector process exited")
+    logging.info("Projector process exited.")
 
 
 def update_monitoring(step_status):
+    logging.info("Monitoring view update.")
+    
     # status image path
     todo_img = os.getcwd() + "/static/TODO.png"
     done_img = os.getcwd() + "/static/DONE.png"

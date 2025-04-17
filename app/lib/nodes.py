@@ -1,5 +1,4 @@
 import cv2
-import numpy as np
 
 from typing import Tuple
 from abc import ABC, abstractmethod
@@ -15,10 +14,10 @@ class Node:
         self.source_position = source_position
         self.target_position = target_position
         self.data = data
-        self.node = self.build_node()  # Chamando o método de construção do nó
+        self.node = self.build_node()  # Calling the node's build method
 
     def build_node(self):
-        # Método para ser implementado nas subclasses
+        # Method to be implemented in subclasses
         pass
     
 
@@ -28,15 +27,15 @@ class InputNode(Node):
         self.video_manager = VideoManager(data['source_type'], data['source'])
 
     def initialize_video(self):
-        """Inicializa a fonte de vídeo"""
+        """Initialize the video source"""
         self.video_manager.initialize()
 
     def get_frame(self):
-        """Obtém o frame do vídeo atual"""
+        """Get the current video frame"""
         return self.video_manager.get_frame()
     
     def release(self):
-        """Libera o vídeo quando não for mais necessário"""
+        """Release the video"""
         return self.video_manager.release()
 
     def build_node(self):
@@ -53,11 +52,6 @@ class InputNode(Node):
             draggable=True,
         )
         return node
-
-
-class ProcessingNode(Node):
-    def __init__(self, id, pos, data):
-        super().__init__(id, pos, 'processing', 'right', 'left', data)
 
 
 class AssemblyStepNode(Node):
@@ -79,6 +73,7 @@ class AssemblyStepNode(Node):
         self.instruction_text = None
         self.obj_cls = None
         self.obj_idx = None
+        self.obj_match_conf = None
         
 
     def build_node(self):
@@ -121,19 +116,6 @@ class TaskNode(Node, ABC):
         pass
 
 
-class CircleTaskNode(TaskNode):
-    
-    def process_task(self, frame):
-        # Desenhar um círculo verde no centro
-        height, width, _ = frame.shape
-        center = (width // 2, height // 2)
-        color = (0, 255, 0)
-        radius = 100
-        thickness = 2
-        frame_with_circle = cv2.circle(frame, center, radius, color, thickness)
-        return frame_with_circle
-
-
 class SquareTaskNode(TaskNode):
     
     def process_task(self, frame):
@@ -162,14 +144,14 @@ class OutputNode(Node):
 
 
     def build_node(self):
-        print("Building output node with data:", self.data)  # Debug print
+        print("Building output node with data:", self.data)
         node = StreamlitFlowNode(
             id=self.id,
             pos=self.pos,
             node_type=self.node_type,
             source_position=self.source_position,
             target_position=self.target_position,
-            data=self.data,  # Mantenha o dicionário completo
+            data=self.data,
             connectable=True,
             deletable=True,
             draggable=True,
